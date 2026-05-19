@@ -1,0 +1,17 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: posts_manager_db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: posts_manager
+    ports:
+      - '27019:27017'
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-seed:/docker-entrypoint-initdb.d
+
+volumes:
+  mongo_data:
