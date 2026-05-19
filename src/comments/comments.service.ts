@@ -8,10 +8,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CommentEntity, CommentsDocument } from './schemas/comments.schema';
 import { CreateUpdateCommentDto } from './dto/create-update-comments.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class CommentsService {
-  constructor(@InjectModel(CommentEntity.name) private commentModel: Model<CommentsDocument>) {}
+  constructor(
+    @InjectModel(CommentEntity.name) private commentModel: Model<CommentsDocument>,
+    private readonly usersService: UsersService,
+  ) {}
 
   async findAll(postId?: string): Promise<CommentEntity[]> {
     try {
@@ -33,18 +37,30 @@ export class CommentsService {
     }
   }
 
-  async create(dto: CreateUpdateCommentDto): Promise<CommentEntity> {
+  async create(dto: CreateUpdateCommentDto, userId: string): Promise<CommentEntity> {
     try {
-      const created = await this.commentModel.create(dto);
+      const user = await this.usersService.findOneRaw(userId);
+      if (!user) throw new NotFoundException('Usuario no encontrado');
+      const created = await this.commentModel.create({
+        ...dto,
+        name: user.name,
+        email: user.email,
+        postId: new Types.ObjectId(dto.postId),
+        userId: new Types.ObjectId(userId),
+      });
       return created.toObject();
-    } catch {
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('Error al crear el comentario');
     }
   }
 
   async update(id: string, dto: CreateUpdateCommentDto): Promise<CommentEntity> {
     try {
-      const comment = await this.commentModel.findByIdAndUpdate(id, dto, { new: true }).lean().exec();
+      const comment = await this.commentModel
+        .findByIdAndUpdate(id, dto, { new: true })
+        .lean()
+        .exec();
       if (!comment) throw new NotFoundException('Comentario no encontrado');
       return comment;
     } catch (error) {

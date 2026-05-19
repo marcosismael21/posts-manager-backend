@@ -13,9 +13,4 @@ export class CreateUpdatePostDto {
   @IsNotEmpty()
   @MinLength(10)
   body!: string;
-
-  @ApiProperty({ example: 'Juan Pérez' })
-  @IsString()
-  @IsNotEmpty()
-  author!: string;
 }

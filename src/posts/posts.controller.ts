@@ -6,13 +6,18 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
 import { CreateUpdatePostDto } from './dto/create-update-post.dto';
 import { ApiResponse } from '../common/responses/api-response';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser, JwtPayload } from '../common/decorators/current-user.decorator';
 
 @ApiTags('posts')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
@@ -38,9 +43,9 @@ export class PostsController {
   }
 
   @Post('bulk')
-  async bulkCreate(@Body() dtos: CreateUpdatePostDto[]) {
+  async bulkCreate(@Body() dtos: CreateUpdatePostDto[], @CurrentUser() user: JwtPayload) {
     try {
-      const data = await this.postsService.bulkCreate(dtos);
+      const data = await this.postsService.bulkCreate(dtos, user.sub);
       return ApiResponse.success(data, `${data.length} posts insertados`);
     } catch (error) {
       return ApiResponse.error((error as Error).message);
@@ -48,9 +53,9 @@ export class PostsController {
   }
 
   @Post()
-  async create(@Body() dto: CreateUpdatePostDto) {
+  async create(@Body() dto: CreateUpdatePostDto, @CurrentUser() user: JwtPayload) {
     try {
-      const data = await this.postsService.create(dto);
+      const data = await this.postsService.create(dto, user.sub);
       return ApiResponse.success(data, 'Post creado');
     } catch (error) {
       return ApiResponse.error((error as Error).message);

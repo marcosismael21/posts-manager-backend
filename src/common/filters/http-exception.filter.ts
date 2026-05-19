@@ -5,7 +5,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { ApiResponse } from '../responses/api-response';
 
 @Catch()
@@ -13,7 +13,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
 
     const status =
       exception instanceof HttpException
@@ -38,6 +37,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? ApiResponse.validationError(message)
         : ApiResponse.error(message);
 
-    response.status(status).json({ ...body, path: request.url });
+    response.status(status).json(body);
   }
 }

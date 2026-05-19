@@ -5,13 +5,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
 import { CreateUpdatePostDto } from './dto/create-update-post.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class PostsService {
-  constructor(@InjectModel(Post.name) private postModel: Model<PostDocument>) {}
+  constructor(
+    @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    private readonly usersService: UsersService,
+  ) {}
 
   async findAll(): Promise<Post[]> {
     try {
@@ -32,11 +36,18 @@ export class PostsService {
     }
   }
 
-  async create(dto: CreateUpdatePostDto): Promise<Post> {
+  async create(dto: CreateUpdatePostDto, userId: string): Promise<Post> {
     try {
-      const created = await this.postModel.create(dto);
+      const user = await this.usersService.findOneRaw(userId);
+      if (!user) throw new NotFoundException('Usuario no encontrado');
+      const created = await this.postModel.create({
+        ...dto,
+        author: user.name,
+        userId: new Types.ObjectId(userId),
+      });
       return created.toObject();
-    } catch {
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('Error al crear el post');
     }
   }
@@ -65,11 +76,19 @@ export class PostsService {
     }
   }
 
-  async bulkCreate(dtos: CreateUpdatePostDto[]): Promise<Post[]> {
+  async bulkCreate(dtos: CreateUpdatePostDto[], userId: string): Promise<Post[]> {
     try {
-      const result = await this.postModel.insertMany(dtos);
+      const user = await this.usersService.findOneRaw(userId);
+      if (!user) throw new NotFoundException('Usuario no encontrado');
+      const docs = dtos.map((dto) => ({
+        ...dto,
+        author: user.name,
+        userId: new Types.ObjectId(userId),
+      }));
+      const result = await this.postModel.insertMany(docs);
       return result.map((doc) => doc.toObject());
-    } catch {
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('Error en la carga masiva de posts');
     }
   }

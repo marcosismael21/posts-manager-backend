@@ -7,13 +7,18 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateUpdateCommentDto } from './dto/create-update-comments.dto';
 import { ApiResponse } from '../common/responses/api-response';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser, JwtPayload } from '../common/decorators/current-user.decorator';
 
 @ApiTags('comments')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
@@ -39,9 +44,9 @@ export class CommentsController {
   }
 
   @Post()
-  async create(@Body() dto: CreateUpdateCommentDto) {
+  async create(@Body() dto: CreateUpdateCommentDto, @CurrentUser() user: JwtPayload) {
     try {
-      const data = await this.commentsService.create(dto);
+      const data = await this.commentsService.create(dto, user.sub);
       return ApiResponse.success(data, 'Comentario creado');
     } catch (error) {
       return ApiResponse.error((error as Error).message);

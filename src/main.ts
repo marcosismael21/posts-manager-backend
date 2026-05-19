@@ -17,6 +17,7 @@ async function bootstrap() {
     .setTitle('Posts Manager API')
     .setDescription('API para gestión de posts y comentarios')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

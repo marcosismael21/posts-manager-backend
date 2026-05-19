@@ -7,19 +7,9 @@ export class CreateUpdateCommentDto {
   @IsNotEmpty()
   postId!: string;
 
-  @ApiProperty({ example: 'Juan Pérez' })
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-
-  @ApiProperty({ example: 'juanperez@example.com' })
-  @IsString()
-  @IsNotEmpty()
-  email!: string;
-
   @ApiProperty({ example: 'Comentario del post...' })
   @IsString()
   @IsNotEmpty()
   @MinLength(10)
-  body!: string;  
+  body!: string;
 }
