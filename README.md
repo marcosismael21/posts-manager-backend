@@ -1,98 +1,138 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Posts Manager — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para gestión de posts y comentarios con soporte de imágenes. Construida con NestJS, MongoDB y MinIO para almacenamiento de archivos.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tecnologías
 
-## Description
+- **NestJS** — framework backend
+- **MongoDB** — base de datos
+- **MinIO** — almacenamiento de imágenes
+- **Docker** — contenedores para MongoDB y MinIO
+- **JWT** — autenticación
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Requisitos previos
 
-## Project setup
+- Node.js 18 o superior
+- npm
+- Docker y Docker Compose
+
+## Instalación
+
+### 1. Clonar el repositorio
 
 ```bash
-$ npm install
+git clone <url-del-repositorio>
+cd posts-manager-backend
 ```
 
-## Compile and run the project
+### 2. Instalar dependencias
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+### 3. Configurar variables de entorno
+
+Copia el archivo de ejemplo y ajusta los valores si es necesario:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Contenido del `.env`:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```env
+PORT=3000
+MONGO_URI=mongodb://root:root@localhost:27019/posts_manager?authSource=admin
+JWT_SECRET=super_secret_key_2026
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=admin
+MINIO_SECRET_KEY=admin123
+MINIO_BUCKET=posts
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 4. Levantar los servicios con Docker
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker-compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Esto levanta tres servicios:
 
-## Resources
+| Servicio     | Descripción                          | Puerto(s)        |
+|--------------|--------------------------------------|------------------|
+| `mongodb`    | Base de datos con seed inicial       | `27019`          |
+| `minio`      | Almacenamiento de imágenes           | `9000`, `9001`   |
+| `minio-init` | Crea el bucket y carga imágenes seed | —                |
 
-Check out a few resources that may come in handy when working with NestJS:
+> La primera vez que se levanta, el seed de MongoDB crea 10 usuarios, 5 posts y 5 comentarios de ejemplo. El seed de MinIO sube las imágenes iniciales al bucket `posts`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 5. Ejecutar el backend
 
-## Support
+```bash
+npm run start:dev
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+La API queda disponible en `http://localhost:3000`.
 
-## Stay in touch
+## Documentación de la API
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+La documentación interactiva (Scalar) está disponible en:
 
-## License
+```
+http://localhost:3000/docs
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Desde ahí se pueden probar todos los endpoints. Para los endpoints protegidos, primero hacer login y pegar el token en el botón **Authorize**.
+
+## Credenciales de prueba
+
+Todos los usuarios del seed tienen la contraseña `12345`. Ejemplo de usuario para login:
+
+```json
+{
+  "email": "juanperez@example.com",
+  "password": "12345"
+}
+```
+
+## Consolas de administración
+
+| Servicio | URL                      | Usuario  | Contraseña |
+|----------|--------------------------|----------|------------|
+| MinIO    | http://localhost:9001    | `admin`  | `admin123` |
+
+## Endpoints principales
+
+| Método | Ruta                | Descripción                        | Auth |
+|--------|---------------------|------------------------------------|------|
+| POST   | `/auth/login`       | Login y obtención de token JWT     | No   |
+| GET    | `/users`            | Listar usuarios                    | Si   |
+| GET    | `/posts`            | Listar todos los posts             | Si   |
+| POST   | `/posts`            | Crear post (con imágenes opcionales)| Si   |
+| PUT    | `/posts/:id`        | Actualizar post                    | Si   |
+| DELETE | `/posts/:id`        | Eliminar post                      | Si   |
+| POST   | `/posts/bulk`       | Carga masiva de posts              | Si   |
+| GET    | `/comments`         | Listar comentarios (filtro postId) | Si   |
+| POST   | `/comments`         | Crear comentario                   | Si   |
+| PUT    | `/comments/:id`     | Actualizar comentario              | Si   |
+| DELETE | `/comments/:id`     | Eliminar comentario                | Si   |
+
+## Subida de imágenes
+
+Los endpoints `POST /posts` y `PUT /posts` aceptan `multipart/form-data`. El campo para las imágenes es `images`.
+
+- Formatos permitidos: `jpg`, `jpeg`, `png`, `gif`, `webp`, `svg`
+- Tamaño máximo por archivo: **6 MB**
+- Máximo de archivos por request: **10**
+
+En el `PUT`, el campo `keepUrls` permite indicar qué imágenes existentes conservar. Las que no se incluyan se eliminan de MinIO automáticamente.
+
+## Scripts disponibles
+
+```bash
+npm run start:dev    # Desarrollo con hot-reload
+npm run start:prod   # Producción
+npm run build        # Compilar
+```
