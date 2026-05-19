@@ -19,12 +19,14 @@ const userIds = Object.values(users.insertedIds);
 // userIds[0]=Ana, [1]=Carlos, [2]=María, [3]=Pedro, [4]=Laura
 // userIds[5]=Juan, [6]=Sofía, [7]=Andrés, [8]=Valentina, [9]=Marcos
 
+const MINIO = 'http://localhost:9000/posts';
+
 const posts = db.posts.insertMany([
-  { title: 'Introducción a NestJS',                     body: 'NestJS es un framework progresivo de Node.js para construir aplicaciones del lado del servidor eficientes y escalables.', author: 'Ana García',      userId: userIds[0], createdAt: new Date(), updatedAt: new Date() },
-  { title: 'Angular Signals: el futuro de la reactividad', body: 'Los signals en Angular 16+ ofrecen una nueva forma de manejar el estado reactivo sin depender exclusivamente de RxJS.',  author: 'Carlos López',    userId: userIds[1], createdAt: new Date(), updatedAt: new Date() },
-  { title: 'MongoDB con Mongoose en NestJS',            body: 'Aprende a integrar MongoDB usando Mongoose dentro de un proyecto NestJS con esquemas tipados y validaciones.',               author: 'María Rodríguez', userId: userIds[2], createdAt: new Date(), updatedAt: new Date() },
-  { title: 'Formularios reactivos en Angular',          body: 'Los formularios reactivos permiten un control total sobre la validación y el estado del formulario desde el componente.',    author: 'Pedro Martínez',  userId: userIds[3], createdAt: new Date(), updatedAt: new Date() },
-  { title: 'Docker para desarrolladores',               body: 'Docker simplifica el despliegue y la portabilidad de aplicaciones mediante contenedores ligeros y reproducibles.',            author: 'Laura Sánchez',   userId: userIds[4], createdAt: new Date(), updatedAt: new Date() },
+  { title: 'Introducción a NestJS',                       body: 'NestJS es un framework progresivo de Node.js para construir aplicaciones del lado del servidor eficientes y escalables.', author: 'Ana García',      userId: userIds[0], imageUrls: [`${MINIO}/nestjs.jpg`, `${MINIO}/backend.jpg`],    createdAt: new Date(), updatedAt: new Date() },
+  { title: 'Angular Signals: el futuro de la reactividad', body: 'Los signals en Angular 16+ ofrecen una nueva forma de manejar el estado reactivo sin depender exclusivamente de RxJS.',  author: 'Carlos López',    userId: userIds[1], imageUrls: [`${MINIO}/angular.jpg`, `${MINIO}/frontend.jpg`],  createdAt: new Date(), updatedAt: new Date() },
+  { title: 'MongoDB con Mongoose en NestJS',              body: 'Aprende a integrar MongoDB usando Mongoose dentro de un proyecto NestJS con esquemas tipados y validaciones.',               author: 'María Rodríguez', userId: userIds[2], imageUrls: [`${MINIO}/mongodb.jpg`],                          createdAt: new Date(), updatedAt: new Date() },
+  { title: 'Formularios reactivos en Angular',            body: 'Los formularios reactivos permiten un control total sobre la validación y el estado del formulario desde el componente.',    author: 'Pedro Martínez',  userId: userIds[3], imageUrls: [`${MINIO}/formularios.jpg`, `${MINIO}/angular.jpg`], createdAt: new Date(), updatedAt: new Date() },
+  { title: 'Docker para desarrolladores',                 body: 'Docker simplifica el despliegue y la portabilidad de aplicaciones mediante contenedores ligeros y reproducibles.',            author: 'Laura Sánchez',   userId: userIds[4], imageUrls: [`${MINIO}/docker.jpg`],                           createdAt: new Date(), updatedAt: new Date() },
 ]);
 
 const postIds = Object.values(posts.insertedIds);

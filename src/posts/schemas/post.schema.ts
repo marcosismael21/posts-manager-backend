@@ -14,6 +14,9 @@ export class Post {
   @Prop({ required: true })
   author!: string;
 
+  @Prop({ type: [String], default: [] })
+  imageUrls!: string[];
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId!: Types.ObjectId;
 }

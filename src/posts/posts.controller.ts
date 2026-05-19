@@ -6,14 +6,19 @@ import {
   Param,
   Post,
   Put,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
-import { CreateUpdatePostDto } from './dto/create-update-post.dto';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser, JwtPayload } from '../common/decorators/current-user.decorator';
+import { multerImageOptions } from '../common/utils/multer.util';
 
 @ApiTags('posts')
 @ApiBearerAuth()
@@ -43,7 +48,7 @@ export class PostsController {
   }
 
   @Post('bulk')
-  async bulkCreate(@Body() dtos: CreateUpdatePostDto[], @CurrentUser() user: JwtPayload) {
+  async bulkCreate(@Body() dtos: CreatePostDto[], @CurrentUser() user: JwtPayload) {
     try {
       const data = await this.postsService.bulkCreate(dtos, user.sub);
       return ApiResponse.success(data, `${data.length} posts insertados`);
@@ -53,9 +58,26 @@ export class PostsController {
   }
 
   @Post()
-  async create(@Body() dto: CreateUpdatePostDto, @CurrentUser() user: JwtPayload) {
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        body: { type: 'string' },
+        images: { type: 'array', items: { type: 'string', format: 'binary' } },
+      },
+      required: ['title', 'body'],
+    },
+  })
+  @UseInterceptors(FilesInterceptor('images', 10, multerImageOptions))
+  async create(
+    @Body() dto: CreatePostDto,
+    @CurrentUser() user: JwtPayload,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
     try {
-      const data = await this.postsService.create(dto, user.sub);
+      const data = await this.postsService.create(dto, user.sub, files);
       return ApiResponse.success(data, 'Post creado');
     } catch (error) {
       return ApiResponse.error((error as Error).message);
@@ -63,9 +85,30 @@ export class PostsController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() dto: CreateUpdatePostDto) {
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        body: { type: 'string' },
+        keepUrls: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'URLs de imágenes existentes a conservar',
+        },
+        images: { type: 'array', items: { type: 'string', format: 'binary' } },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('images', 10, multerImageOptions))
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdatePostDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
     try {
-      const data = await this.postsService.update(id, dto);
+      const data = await this.postsService.update(id, dto, files);
       return ApiResponse.success(data, 'Post actualizado');
     } catch (error) {
       return ApiResponse.error((error as Error).message);

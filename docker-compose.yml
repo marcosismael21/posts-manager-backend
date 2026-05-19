@@ -13,5 +13,30 @@ services:
       - mongo_data:/data/db
       - ./mongo-seed:/docker-entrypoint-initdb.d
 
+  minio:
+    image: minio/minio
+    container_name: posts_manager_storage
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc
+    container_name: posts_manager_storage_init
+    depends_on:
+      - minio
+    volumes:
+      - ./minio-seed:/minio-seed
+    entrypoint: /bin/sh /minio-seed/init.sh
+    restart: on-failure
+
 volumes:
   mongo_data:
+  minio_data:
