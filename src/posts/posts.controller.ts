@@ -4,16 +4,19 @@ import {
   Delete,
   Get,
   HttpCode,
+  MessageEvent,
   Param,
   Post,
   Put,
   Query,
+  Sse,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { Observable, map } from 'rxjs';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -21,6 +24,7 @@ import { ApiResponse } from '../common/responses/api-response';
 import { ApiPaginatedResponse } from '../common/responses/api-response-paginated';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser, JwtPayload } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { multerImageOptions } from '../common/utils/multer.util';
 
 @ApiTags('posts')
@@ -29,6 +33,14 @@ import { multerImageOptions } from '../common/utils/multer.util';
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
+
+  @Public()
+  @Sse('events')
+  streamEvents(): Observable<MessageEvent> {
+    return this.postsService.changes$.pipe(
+      map(() => ({ data: { type: 'posts_changed' } }) as MessageEvent),
+    );
+  }
 
   @Get()
   @ApiQuery({ name: 'userId', required: false, description: 'Filtrar posts por ID de usuario' })

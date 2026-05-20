@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Subject } from 'rxjs';
 import { Post, PostDocument } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -16,6 +17,9 @@ import { FindAllOptions } from './dto/find-all-posts.dto';
 
 @Injectable()
 export class PostsService {
+  private readonly changesSubject = new Subject<void>();
+  readonly changes$ = this.changesSubject.asObservable();
+
   constructor(
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
     private readonly usersService: UsersService,
@@ -73,6 +77,7 @@ export class PostsService {
         userId: new Types.ObjectId(userId),
         imageUrls,
       });
+      this.changesSubject.next();
       return created.toObject();
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -86,7 +91,6 @@ export class PostsService {
       if (!post) throw new NotFoundException('Post no encontrado');
 
       const keepUrls: string[] = dto.keepUrls ?? post.imageUrls ?? [];
-
       const removedUrls = (post.imageUrls ?? []).filter((url) => !keepUrls.includes(url));
       await Promise.all(removedUrls.map((url) => this.storageService.delete(url)));
 
@@ -95,12 +99,12 @@ export class PostsService {
         : [];
 
       const imageUrls = [...keepUrls, ...newUrls];
-
       const updated = await this.postModel
         .findByIdAndUpdate(id, { ...dto, imageUrls }, { new: true })
         .lean()
         .exec();
 
+      this.changesSubject.next();
       return updated!;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -115,6 +119,7 @@ export class PostsService {
       if (post.imageUrls?.length) {
         await Promise.all(post.imageUrls.map((url) => this.storageService.delete(url)));
       }
+      this.changesSubject.next();
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new BadRequestException('ID de post inválido');
@@ -132,6 +137,7 @@ export class PostsService {
         imageUrls: [],
       }));
       const result = await this.postModel.insertMany(docs);
+      this.changesSubject.next();
       return result.map((doc) => doc.toObject());
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
