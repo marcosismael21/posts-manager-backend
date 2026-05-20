@@ -11,6 +11,8 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersService } from '../users/users.service';
 import { StorageService } from '../storage/storage.service';
+import { PaginatedData } from '../common/responses/api-response-paginated';
+import { FindAllOptions } from './dto/find-all-posts.dto';
 
 @Injectable()
 export class PostsService {
@@ -20,10 +22,27 @@ export class PostsService {
     private readonly storageService: StorageService,
   ) {}
 
-  async findAll(): Promise<Post[]> {
+  async findAll(options: FindAllOptions): Promise<PaginatedData<Post>> {
     try {
-      return await this.postModel.find().sort({ createdAt: -1 }).lean().exec();
-    } catch {
+      const { userId, page, limit } = options;
+      const skip = (page - 1) * limit;
+
+      const filter: Record<string, unknown> = {};
+      if (userId) {
+        if (!Types.ObjectId.isValid(userId)) {
+          throw new BadRequestException('ID de usuario inválido');
+        }
+        filter.userId = new Types.ObjectId(userId);
+      }
+
+      const [items, total] = await Promise.all([
+        this.postModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean().exec(),
+        this.postModel.countDocuments(filter).exec(),
+      ]);
+
+      return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('Error al obtener los posts');
     }
   }

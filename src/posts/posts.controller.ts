@@ -3,19 +3,22 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiResponse } from '../common/responses/api-response';
+import { ApiPaginatedResponse } from '../common/responses/api-response-paginated';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser, JwtPayload } from '../common/decorators/current-user.decorator';
 import { multerImageOptions } from '../common/utils/multer.util';
@@ -28,16 +31,28 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  async findAll() {
+  @ApiQuery({ name: 'userId', required: false, description: 'Filtrar posts por ID de usuario' })
+  @ApiQuery({ name: 'page', required: false, description: 'Número de página', example: '1' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Registros por página (máx. 200)', example: '10' })
+  async findAll(
+    @Query('userId') userId?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
     try {
-      const data = await this.postsService.findAll();
-      return ApiResponse.success(data);
+      const data = await this.postsService.findAll({
+        userId,
+        page: Math.max(1, parseInt(page) || 1),
+        limit: Math.min(200, Math.max(1, parseInt(limit) || 100)),
+      });
+      return ApiPaginatedResponse.success(data);
     } catch (error) {
-      return ApiResponse.error((error as Error).message);
+      return ApiPaginatedResponse.error((error as Error).message);
     }
   }
 
   @Get(':id')
+  @HttpCode(200)
   async findOne(@Param('id') id: string) {
     try {
       const data = await this.postsService.findOne(id);
