@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -69,12 +70,16 @@ export class CommentsService {
     }
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     try {
-      const result = await this.commentModel.findByIdAndDelete(id).lean().exec();
-      if (!result) throw new NotFoundException('Comentario no encontrado');
+      const comment = await this.commentModel.findById(id).lean().exec();
+      if (!comment) throw new NotFoundException('Comentario no encontrado');
+      if (comment.userId.toString() !== userId) {
+        throw new ForbiddenException('No tienes permiso para eliminar este comentario');
+      }
+      await this.commentModel.findByIdAndDelete(id).exec();
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       throw new BadRequestException('ID de comentario inválido');
     }
   }

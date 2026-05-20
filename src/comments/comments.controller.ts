@@ -64,9 +64,9 @@ export class CommentsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     try {
-      await this.commentsService.remove(id);
+      await this.commentsService.remove(id, user.sub);
       return ApiResponse.success(null, 'Comentario eliminado');
     } catch (error) {
       return ApiResponse.error((error as Error).message);
