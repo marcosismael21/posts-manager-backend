@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { memoryStorage } from 'multer';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-const MAX_SIZE_BYTES = 6 * 1024 * 1024; // 6MB
+const MAX_SIZE_BYTES = 6 * 1024 * 1024;
 
 export const multerImageOptions = {
   storage: memoryStorage(),

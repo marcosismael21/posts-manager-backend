@@ -39,8 +39,6 @@ export class StorageService implements OnModuleInit {
     try {
       const filename = url.split('/').pop()!;
       await this.client.removeObject(this.bucket, filename);
-    } catch {
-      // si el archivo no existe en MinIO no interrumpimos el flujo
-    }
+    } catch {}
   }
 }
