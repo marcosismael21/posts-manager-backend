@@ -23,6 +23,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   app.use('/docs', apiReference({ spec: { content: document } }));
 
+  app.enableCors({ origin: 'http://localhost:4200' });
+
+  app.getHttpAdapter().getInstance().set('etag', false);
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
