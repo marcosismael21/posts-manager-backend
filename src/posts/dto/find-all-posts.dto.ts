@@ -5,6 +5,7 @@ export interface FindAllOptions {
   userId?: string;
   page: number;
   limit: number;
+  search?: string;
 }
 
 export class FindAllPostsDto {

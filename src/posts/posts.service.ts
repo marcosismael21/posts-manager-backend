@@ -28,7 +28,7 @@ export class PostsService {
 
   async findAll(options: FindAllOptions): Promise<PaginatedData<Post>> {
     try {
-      const { userId, page, limit } = options;
+      const { userId, page, limit, search } = options;
       const skip = (page - 1) * limit;
 
       const filter: Record<string, unknown> = {};
@@ -37,6 +37,12 @@ export class PostsService {
           throw new BadRequestException('ID de usuario inválido');
         }
         filter.userId = new Types.ObjectId(userId);
+      }
+      if (search?.trim()) {
+        filter.$or = [
+          { title: { $regex: search.trim(), $options: 'i' } },
+          { author: { $regex: search.trim(), $options: 'i' } },
+        ];
       }
 
       const [items, total] = await Promise.all([

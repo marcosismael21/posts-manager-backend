@@ -46,16 +46,19 @@ export class PostsController {
   @ApiQuery({ name: 'userId', required: false, description: 'Filtrar posts por ID de usuario' })
   @ApiQuery({ name: 'page', required: false, description: 'Número de página', example: '1' })
   @ApiQuery({ name: 'limit', required: false, description: 'Registros por página (máx. 200)', example: '10' })
+  @ApiQuery({ name: 'search', required: false, description: 'Buscar por título o autor' })
   async findAll(
     @Query('userId') userId?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '10',
+    @Query('search') search?: string,
   ) {
     try {
       const data = await this.postsService.findAll({
         userId,
         page: Math.max(1, parseInt(page) || 1),
         limit: Math.min(200, Math.max(1, parseInt(limit) || 100)),
+        search,
       });
       return ApiPaginatedResponse.success(data);
     } catch (error) {
