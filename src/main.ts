@@ -17,11 +17,21 @@ async function bootstrap() {
     .setTitle('Posts Manager API')
     .setDescription('API para gestión de posts y comentarios')
     .setVersion('1.0')
+    .addServer('http://localhost:3000')
     .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+
+  if (document.tags) {
+    document.tags.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  document.paths = Object.fromEntries(
+    Object.entries(document.paths ?? {}).sort(([a], [b]) => a.localeCompare(b)),
+  );
+
   app.use('/docs', apiReference({ spec: { content: document } }));
+  app.use('/docs-json', (_req: any, res: any) => res.json(document));
 
   app.enableCors({ origin: 'http://localhost:4200' });
 
