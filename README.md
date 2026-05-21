@@ -43,38 +43,50 @@ Contenido del `.env`:
 
 ```env
 PORT=3000
+
+MONGO_ROOT_USER=root
+MONGO_ROOT_PASSWORD=root
+MONGO_DB=posts_manager
 MONGO_URI=mongodb://root:root@localhost:27019/posts_manager?authSource=admin
+
 JWT_SECRET=super_secret_key_2026
-MINIO_ENDPOINT=localhost
+
 MINIO_PORT=9000
 MINIO_ACCESS_KEY=admin
 MINIO_SECRET_KEY=admin123
 MINIO_BUCKET=posts
+MINIO_PUBLIC_URL=http://localhost:9000
 ```
 
-### 4. Levantar los servicios con Docker
+> `MONGO_URI` se usa en desarrollo local. En el stack Docker, la URI se construye automáticamente desde `MONGO_ROOT_USER`, `MONGO_ROOT_PASSWORD` y `MONGO_DB`.
+
+### 4. Levantar con Docker (stack completo)
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
-Esto levanta tres servicios:
+Esto levanta todos los servicios:
 
-| Servicio     | Descripción                          | Puerto(s)        |
-|--------------|--------------------------------------|------------------|
-| `mongodb`    | Base de datos con seed inicial       | `27019`          |
-| `minio`      | Almacenamiento de imágenes           | `9000`, `9001`   |
-| `minio-init` | Crea el bucket y carga imágenes seed | —                |
+| Servicio       | Descripción                          | Puerto(s)        |
+|----------------|--------------------------------------|------------------|
+| `api`          | Backend NestJS                       | `3000`           |
+| `mongodb`      | Base de datos con seed inicial       | `27019`          |
+| `minio`        | Almacenamiento de imágenes           | `9000`, `9001`   |
+| `minio-init`   | Crea el bucket y carga imágenes seed | —                |
 
-> La primera vez que se levanta, el seed de MongoDB crea 10 usuarios, 5 posts y 5 comentarios de ejemplo. El seed de MinIO sube las imágenes iniciales al bucket `posts`.
-
-### 5. Ejecutar el backend
-
-```bash
-npm run start:dev
-```
+> La primera vez que se levanta, el seed de MongoDB crea 10 usuarios, 5 posts y 5 comentarios de ejemplo.
 
 La API queda disponible en `http://localhost:3000`.
+
+### Alternativa: desarrollo local
+
+Si prefieres hot-reload durante el desarrollo, levanta solo la infraestructura y corre el backend por separado:
+
+```bash
+docker compose up -d mongodb minio minio-init
+npm run start:dev
+```
 
 ## Documentación de la API
 

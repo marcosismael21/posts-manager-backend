@@ -30,9 +30,8 @@ export class StorageService implements OnModuleInit {
     await this.client.putObject(this.bucket, filename, file.buffer, file.size, {
       'Content-Type': file.mimetype,
     });
-    const endpoint = this.config.get<string>('MINIO_ENDPOINT');
-    const port = this.config.get<string>('MINIO_PORT');
-    return `http://${endpoint}:${port}/${this.bucket}/${filename}`;
+    const publicUrl = this.config.get<string>('MINIO_PUBLIC_URL');
+    return `${publicUrl}/${this.bucket}/${filename}`;
   }
 
   async delete(url: string): Promise<void> {
