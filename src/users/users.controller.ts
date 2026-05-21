@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUpdateUserDto } from './dto/create-update-user.dto';
@@ -10,9 +10,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async findAll() {
+  async findAll(@Query('search') search?: string) {
     try {
-      const data = await this.usersService.findAll();
+      const data = await this.usersService.findAll(search);
       return ApiResponse.success(data);
     } catch (error) {
       return ApiResponse.error((error as Error).message);
