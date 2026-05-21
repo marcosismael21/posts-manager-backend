@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { User, UserDocument } from './schemas/user.schema';
 import { Post, PostDocument } from '../posts/schemas/post.schema';
@@ -21,7 +21,7 @@ export class UsersService {
 
   async findAll(search?: string): Promise<Omit<User, 'password'>[]> {
     try {
-      const filter: FilterQuery<User> = { isDeleted: false };
+      const filter: Record<string, unknown> = { isDeleted: false };
       if (search?.trim()) {
         const regex = new RegExp(search.trim(), 'i');
         filter.$or = [{ name: regex }, { email: regex }];
