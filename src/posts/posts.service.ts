@@ -31,7 +31,7 @@ export class PostsService {
       const { userId, page, limit, search } = options;
       const skip = (page - 1) * limit;
 
-      const filter: Record<string, unknown> = {};
+      const filter: Record<string, unknown> = { isDeleted: false };
       if (userId) {
         if (!Types.ObjectId.isValid(userId)) {
           throw new BadRequestException('ID de usuario inválido');
@@ -59,7 +59,7 @@ export class PostsService {
 
   async findOne(id: string): Promise<Post> {
     try {
-      const post = await this.postModel.findById(id).lean().exec();
+      const post = await this.postModel.findOne({ _id: id, isDeleted: false }).lean().exec();
       if (!post) throw new NotFoundException('Post no encontrado');
       return post;
     } catch (error) {
@@ -120,11 +120,11 @@ export class PostsService {
 
   async remove(id: string): Promise<void> {
     try {
-      const post = await this.postModel.findByIdAndDelete(id).lean().exec();
+      const post = await this.postModel
+        .findOneAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true })
+        .lean()
+        .exec();
       if (!post) throw new NotFoundException('Post no encontrado');
-      if (post.imageUrls?.length) {
-        await Promise.all(post.imageUrls.map((url) => this.storageService.delete(url)));
-      }
       this.changesSubject.next();
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
