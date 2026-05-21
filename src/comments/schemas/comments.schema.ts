@@ -19,6 +19,9 @@ export class CommentEntity {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId!: Types.ObjectId;
+
+  @Prop({ default: false })
+  isDeleted!: boolean;
 }
 
 export const CommentsSchema = SchemaFactory.createForClass(CommentEntity);

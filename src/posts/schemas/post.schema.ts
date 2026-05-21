@@ -19,6 +19,9 @@ export class Post {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId!: Types.ObjectId;
+
+  @Prop({ default: false })
+  isDeleted!: boolean;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
