@@ -129,6 +129,25 @@ Los endpoints `POST /posts` y `PUT /posts` aceptan `multipart/form-data`. El cam
 
 En el `PUT`, el campo `keepUrls` permite indicar qué imágenes existentes conservar. Las que no se incluyan se eliminan de MinIO automáticamente.
 
+## Carga masiva de posts
+
+El endpoint `POST /posts/bulk` acepta un array JSON con la siguiente estructura:
+
+```json
+[
+  {
+    "title": "Introducción a NestJS",
+    "body": "NestJS es un framework progresivo de Node.js para construir aplicaciones del lado del servidor eficientes y escalables."
+  },
+  {
+    "title": "Angular Signals",
+    "body": "Los signals en Angular ofrecen una nueva forma de manejar el estado reactivo sin depender exclusivamente de RxJS."
+  }
+]
+```
+
+> Desde la sección **Mis posts** de la aplicación web se puede descargar esta plantilla, editarla y subirla directamente desde el modal de carga masiva.
+
 ## Scripts disponibles
 
 ```bash
