@@ -20,7 +20,8 @@ export class CommentsService {
 
   async findAll(postId?: string): Promise<CommentEntity[]> {
     try {
-      const filter = postId ? { postId: new Types.ObjectId(postId) } : {};
+      const filter: Record<string, unknown> = { isDeleted: false };
+      if (postId) filter.postId = new Types.ObjectId(postId);
       return await this.commentModel.find(filter).sort({ createdAt: -1 }).lean().exec();
     } catch {
       throw new InternalServerErrorException('Error al obtener los comentarios');
@@ -77,7 +78,7 @@ export class CommentsService {
       if (comment.userId.toString() !== userId) {
         throw new ForbiddenException('No tienes permiso para eliminar este comentario');
       }
-      await this.commentModel.findByIdAndDelete(id).exec();
+      await this.commentModel.findByIdAndUpdate(id, { isDeleted: true }).exec();
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       throw new BadRequestException('ID de comentario inválido');
